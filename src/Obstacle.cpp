@@ -1,29 +1,30 @@
 //
 // Created by asphox on 20/02/19.
 //
-
+#include <iostream>
 #include "Obstacle.h"
+#include "CoordinateGrid.h"
 
-Obstacle::Obstacle(CoordinateGrid& grid)
-:   m_grid(grid)
+Obstacle::Obstacle()
 {
     m_shape.setRadius(m_radius);
     m_shape.setFillColor(sf::Color::Red);
 }
 
-void Obstacle::update()
+void Obstacle::adaptToGrid(const CoordinateGrid& grid, MODE mode)
 {
-    m_shape.setOrigin(-m_grid.getCenter().x+m_radius,-m_grid.getCenter().y+m_radius);
-    m_shape.setPosition(m_grid.realPolarToWindowCartesian(m_r,m_angle));
-
-   m_shape.setRadius(m_radius);
+    if(mode == MODE::OBSTACLES)
+        m_shape.setRadius(m_radius);
+    else if(mode == MODE::RAW)
+        m_shape.setRadius(2);
+    m_shape.setOrigin(-grid.getCenter().x+m_shape.getRadius(),-grid.getCenter().y+m_shape.getRadius());
+    m_shape.setPosition(grid.realPolarToWindowCartesian(m_r,m_angle));
 }
 
 void Obstacle::setPolarPosition(float r, float angle)
 {
     m_r = r;
     m_angle = angle;
-    update();
 }
 
 void Obstacle::draw(sf::RenderTarget& target, sf::RenderStates states) const

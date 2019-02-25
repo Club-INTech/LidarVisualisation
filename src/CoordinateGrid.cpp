@@ -7,8 +7,8 @@
 CoordinateGrid::CoordinateGrid(sf::RenderTarget& target)
 :   m_render(target)
 {
-    stretch_X = target.getSize().x/(MAX_RADIUS_METERS*2);
-    stretch_Y = target.getSize().y/(MAX_RADIUS_METERS*2);
+    stretch_X = target.getSize().x/(MAX_RADIUS_M*2);
+    stretch_Y = target.getSize().y/(MAX_RADIUS_M*2);
 
     m_axis_x.setSize(sf::Vector2f(target.getSize().x,2));
     m_axis_x.setOrigin(m_axis_x.getSize().x/2,1);
@@ -63,6 +63,14 @@ void CoordinateGrid::draw(sf::RenderTarget& target, sf::RenderStates states) con
     target.draw(m_1m_radius_circle,states);
     target.draw(m_2m_radius_circle,states);
     target.draw(m_3m_radius_circle,states);
+
+    if( m_telegram != nullptr )
+    {
+        m_telegram->adaptToGrid(*this);
+        target.draw(*m_telegram,states);
+
+    }
+
 }
 
 sf::Vector2f CoordinateGrid::realPolarToWindowCartesian(float r, float angle) const

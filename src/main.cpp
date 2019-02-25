@@ -6,22 +6,65 @@
 #include <SFML/Network.hpp>
 #include "TitleStatus.h"
 #include "CoordinateGrid.h"
-#include  "Obstacle.h"
+#include "Lidar.h"
 #include "iostream"
 
-int main()
+static const std::string version = "LidarVisualisation version 0.1, by Intech";
+
+int main(int argc, char* argv[])
 {
+    uint16_t W = 800, H = 800;
+    std::string ip_address = "127.0.0.1";
+    int port = 17865;
+    uint32_t timeout_ms = 10000;
+    std::string arg;
+    for( int i = 1 ; i < argc ; i++ )
+    {
+        arg = argv[i];
+        if( arg == "-w" )
+        {
+            if( i+1 < argc )
+            {
+                arg = argv[i+1];
+                int pos = arg.find('x');
+                W = std::stof(arg.substr(0,pos));
+                arg = arg.substr(pos+1);
+                H = std::stof(arg);
+            }
+        }
+        else if( arg == "-a" )
+        {
+            if( i+1 < argc )
+            {
+                ip_address = argv[i+1];
+            }
+        }
+        else if( arg == "-p" )
+        {
+            if( i+1 < argc )
+            {
+                port = std::stoi(argv[i+1]);
+            }
+        }
+        else if( arg == "-v" )
+        {
+            std::cout << version << std::endl;
+            return 0;
+        }
+        else if( arg == "-t" )
+        {
+            if( i+1 < argc )
+            {
+                timeout_ms = std::stoi(argv[i+1]);
+            }
+        }
+    }
 
-    char buffer[1000];
-
-    bool m_connected = false;
-    sf::TcpSocket socket;
-    socket.setBlocking(true);
-    sf::RenderWindow window(sf::VideoMode(800, 800), "");
+    sf::RenderWindow window(sf::VideoMode(W, H), "");
+    window.setFramerateLimit(30);
     TitleStatus titleStatus(window,"LidarVisualisation","Waiting lidar on 127.0.0.1:17865 ... ");
     CoordinateGrid grid(window);
-
-    std::vector<Obstacle> arraynul;
+    Lidar lidar(grid);
 
     while (window.isOpen())
     {
@@ -30,54 +73,32 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if( event.type == sf::Event::KeyReleased )
+            {
+                if( event.key.code == sf::Keyboard::R )
+                    lidar.setMode(MODE::RAW);
+                else if( event.key.code == sf::Keyboard::O )
+                    lidar.setMode(MODE::OBSTACLES);
+            }
         }
 
-        if( !m_connected && socket.connect("127.0.0.1",17865) == sf::Socket::Status::Done )
+        if( !lidar.connected() && lidar.connect(ip_address,port) )
         {
-            m_connected = true;
-            socket.setBlocking(false);
             titleStatus.setStatus("Connected !");
         }
 
-        if( m_connected )
+        if( lidar.connected() )
         {
-            std::string str;
-            std::size_t r;
-            arraynul.clear();
-           char c = 0x00;
-           int i = 0;
-           while( c != '\n' )
-           {
-               socket.receive(&c,1,r);
-               if( c != 0x00 )
-                 str+=c;
-           }
-           str = str.substr(2);
-
-           while( str.length() )
-           {
-               int pos = str.find(':');
-               float r = std::stof(str.substr(0,pos));
-               str = str.substr(pos+1);
-               pos = str.find(';');
-               if( pos == -1)
-                   pos = str.find('\n');
-               float angle = std::stof(str.substr(0,pos));
-               str = str.substr(pos+1);
-               Obstacle obs(grid);
-               obs.setPolarPosition(r/1000.0,angle);
-               arraynul.push_back(obs);
-           }
+            if(lidar.update())
+            {
+                grid.setTelegram(lidar.getObstacles());
+            }
         }
 
         window.clear(sf::Color::Black);
 
         window.draw(grid);
 
-        for( auto& it : arraynul )
-        {
-            window.draw(it);
-        }
         window.display();
     }
 

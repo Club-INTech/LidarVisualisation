@@ -6,25 +6,29 @@
 #define LIDARVISUALISATION_OBSTACLE_H
 
 #include <SFML/Graphics.hpp>
+#include "Modes.h"
 #include <cmath>
-#include "CoordinateGrid.h"
+
+class CoordinateGrid;
 
 class Obstacle : public sf::Drawable
 {
 private:
+    friend class Telegram;
     float m_r = 0;
     float m_angle = 0;
     float m_radius = 10;
 
     sf::CircleShape m_shape;
-    CoordinateGrid& m_grid;
-
-    void update();
 
     virtual void draw(sf::RenderTarget&, sf::RenderStates ) const final;
 public:
 
-    Obstacle(CoordinateGrid&);
+    Obstacle();
+
+
+    void adaptToGrid(const CoordinateGrid& grid, MODE mode);
+
 
     void setPolarPosition(float r,float angle);
 };

@@ -11,9 +11,9 @@
 class TitleStatus
 {
 private:
+    sf::RenderWindow& m_window;
     std::string m_title;
     std::string m_status;
-    sf::RenderWindow& m_window;
 
     void update();
 
