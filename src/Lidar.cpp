@@ -2,6 +2,7 @@
 // Created by asphox on 25/02/19.
 //
 
+#include <cstring>
 #include "Lidar.h"
 
 
@@ -36,19 +37,25 @@ bool Lidar::computeRaw(std::string& str)
     str = str.substr(1);
     float r;
     float angle;
+    std::string rStr;
     try
     {
         while( str.length() )
         {
             pos = str.find(':');
-            r = std::stof(str.substr(0,pos));
+            rStr = str.substr(0,pos);
+            r = std::stof(rStr);
             str = str.substr(pos+1);
             pos = str.find(';');
             if( pos == -1 ) pos = str.find('\n');
             angle = std::stof(str.substr(0,pos));
             str = str.substr(pos+1);
             tmp_obstacle.setPolarPosition(r/1000,angle);
-            m_obstacles.push(tmp_obstacle);
+            float angleDeg = angle*180/PI;
+            if(r > 0) {
+                printf("R/A= %s/%f\n", rStr.c_str(), angleDeg);
+                m_obstacles.push(tmp_obstacle);
+            }
         }
         return true;
     }
