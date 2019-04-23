@@ -34,7 +34,6 @@ bool Lidar::computeRaw(std::string& str)
     m_obstacles.setMode(MODE::RAW);
 
     long int pos = 0;
-    str = str.substr(1);
     float r;
     float angle;
     std::string rStr;
@@ -43,23 +42,19 @@ bool Lidar::computeRaw(std::string& str)
         while( str.length() )
         {
             pos = str.find(':');
-            rStr = str.substr(0,pos);
-            r = std::stof(rStr);
+            r = std::stof(str.substr(0,pos));
             str = str.substr(pos+1);
             pos = str.find(';');
             if( pos == -1 ) pos = str.find('\n');
             angle = std::stof(str.substr(0,pos));
             str = str.substr(pos+1);
-            tmp_obstacle.setPolarPosition(r/1000,angle);
-            float angleDeg = angle*180/PI;
-            if(r > 0) {
-                printf("R/A= %s/%f\n", rStr.c_str(), angleDeg);
-                m_obstacles.push(tmp_obstacle);
-            }
+            tmp_obstacle.setPolarPosition(r/1000.0,angle);
+            m_obstacles.push(tmp_obstacle);
+
         }
         return true;
     }
-    catch( std::invalid_argument& e )
+    catch( std::exception& e )
     {
         return false;
     }
@@ -72,9 +67,9 @@ bool Lidar::computeObstacles(std::string& str)
     m_obstacles.setMode(MODE::OBSTACLES);
 
     long int pos = 0;
-    str = str.substr(1);
     float r;
     float angle;
+
     try
     {
         while( str.length() )
@@ -112,19 +107,22 @@ void Lidar::setMode(MODE mode)
 
 bool Lidar::update()
 {
-    std::string buffer;
-    std::size_t nbrBytesReceived;
+    static std::string buffer;
+    buffer.clear();
+    std::size_t nbrBytesReceived = 1;
 
     char tmp_c = 0x00;
     while( tmp_c != '\n' )
     {
         m_socket.receive(&tmp_c,1,nbrBytesReceived);
+        if( !nbrBytesReceived )
+            break;
         if( tmp_c != 0x00 ) {
             buffer+=tmp_c;
         }
     }
 
-    if( buffer[0] == '!' && buffer[1] == '!' && buffer[buffer.length()-1] == '\n' )
+    if( buffer[0] == '!' && buffer[1] == '!' && buffer[buffer.length()-1] == '\n' && nbrBytesReceived)
     {
         buffer = buffer.substr(2);
         switch(m_mode)

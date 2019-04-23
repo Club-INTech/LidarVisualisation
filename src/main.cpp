@@ -9,12 +9,12 @@
 #include "Lidar.h"
 #include "iostream"
 
-static const std::string version = "LidarVisualisation version 0.1, by Intech";
+static const std::string version = "LidarVisualisation version 0.2, by Intech";
 
 int main(int argc, char* argv[])
 {
     uint16_t W = 800, H = 800;
-    std::string ip_address = "127.0.0.1";
+    std::string ip_address = "192.168.1.6";
     int port = 17865;
     uint32_t timeout_ms = 10000;
     std::string arg;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     }
 
     sf::RenderWindow window(sf::VideoMode(W, H), "");
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(40);
     TitleStatus titleStatus(window,"LidarVisualisation","Waiting lidar on 127.0.0.1:17865 ... ");
     CoordinateGrid grid(window);
     Lidar lidar(grid);
