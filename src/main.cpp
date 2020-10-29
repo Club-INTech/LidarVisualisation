@@ -10,11 +10,19 @@
 #include "iostream"
 
 static const std::string version = "LidarVisualisation version 0.2, by Intech";
+static const std::string help = "`-a <ip_address>` allows to set the address of the machine running the LiDAR process\n"
+                                "`-p <port_number>` allows to set the port the LiDAR process is running on\n"
+                                "`-t <timeout>` allows to set, in ms, the timeout value (currently not used)\n"
+                                "`-v` displays the version of this app and exits\n"
+                                "`-w <dimensions>` allows to set the size of the window, in pixels, with the format"
+                                "`<width>x<height>`\n"
+                                "`-h` displays this message and exits";
 
 int main(int argc, char* argv[])
 {
     uint16_t W = 800, H = 800;
     std::string ip_address = "192.168.1.6";
+    //std::string ip_address = "127.0.0.1";
     int port = 17865;
     uint32_t timeout_ms = 10000;
     std::string arg;
@@ -58,11 +66,17 @@ int main(int argc, char* argv[])
                 timeout_ms = std::stoi(argv[i+1]);
             }
         }
+        else if (arg == "-h"){
+            std::cout << help << std::endl;
+            return 0;
+        }
     }
 
     sf::RenderWindow window(sf::VideoMode(W, H), "");
     window.setFramerateLimit(40);
-    TitleStatus titleStatus(window,"LidarVisualisation","Waiting lidar on 127.0.0.1:17865 ... ");
+    char port_string[6];
+    sprintf(port_string, "%i", port);
+    TitleStatus titleStatus(window,"LidarVisualisation","Waiting lidar on "+ip_address+":"+port_string+" ... ");
     CoordinateGrid grid(window);
     Lidar lidar(grid);
 
