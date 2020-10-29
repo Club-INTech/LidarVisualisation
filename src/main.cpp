@@ -21,8 +21,8 @@ static const std::string help = "`-a <ip_address>` allows to set the address of 
 int main(int argc, char* argv[])
 {
     uint16_t W = 800, H = 800;
-    std::string ip_address = "192.168.1.6";
-    //std::string ip_address = "127.0.0.1";
+    //std::string ip_address = "192.168.1.6";
+    std::string ip_address = "127.0.0.1";
     int port = 17865;
     uint32_t timeout_ms = 10000;
     std::string arg;
